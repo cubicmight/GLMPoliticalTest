@@ -60,5 +60,13 @@ function addRow() {
         });
 }
 
+function getPolarityValue() {
+      fetch('/get_polarity')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('output').innerHTML = data;
+        });
+    }
 
-// setInterval(fetchlogs, 5000);
+    window.onload = getPolarityValue;
+

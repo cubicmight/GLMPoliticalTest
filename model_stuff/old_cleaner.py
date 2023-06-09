@@ -1,19 +1,14 @@
 import os
 import nltk
-from nltk.corpus import wordnet
-from nltk.probability import FreqDist
-
 nltk.download('words')
-nltk.download('wordnet')
-
+# Use nltk count to see frequency of word in corpus
 # Load English word dictionary
 english_words = set(nltk.corpus.words.words())
 
-# Function to check if a phrase is composed of English words with a frequency threshold
-def is_english(phrase, threshold=0):
+# Function to check if a phrase is composed of English words
+def is_english(phrase):
     words = phrase.split()
-    freq_dist = FreqDist(words)
-    return all(word.lower() in english_words and wordnet.synsets(word.lower()) and FreqDist(wordnet.synsets(word.lower())[0].lemma_names()).freq(word.lower()) > threshold for word in words)
+    return all(word.lower() in english_words for word in words)
 
 # Directory paths
 dataset_directory = '../dataset'
@@ -22,9 +17,6 @@ cleaned_data_directory = '../cleaned_data'
 # Create the cleaned_data directory if it doesn't exist
 if not os.path.exists(cleaned_data_directory):
     os.makedirs(cleaned_data_directory)
-
-# Specify the frequency threshold
-threshold = 0
 
 # Iterate over files in the dataset directory
 for filename in os.listdir(dataset_directory):
@@ -38,8 +30,7 @@ for filename in os.listdir(dataset_directory):
         cleaned_data = []
         for line in data:
             phrase, _ = line.strip().split('|')
-            words = phrase.split()
-            if all(word.lower() in english_words and wordnet.synsets(word.lower()) and FreqDist(wordnet.synsets(word.lower())[0].lemma_names()).freq(word.lower()) > threshold for word in words):
+            if is_english(phrase):
                 cleaned_data.append(line)
 
         # Write cleaned data to a new file

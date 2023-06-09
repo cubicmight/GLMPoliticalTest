@@ -3,7 +3,6 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-from app.camera import CameraStream
 from config import Config
 
 app = Flask(__name__)
