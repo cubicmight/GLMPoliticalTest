@@ -17,7 +17,7 @@ cleaned_data_directory = '../cleaned_data'
 # Create the cleaned_data directory if it doesn't exist
 if not os.path.exists(cleaned_data_directory):
     os.makedirs(cleaned_data_directory)
-
+#test
 # Iterate over files in the dataset directory
 for filename in os.listdir(dataset_directory):
     if filename.startswith('partisan_phrases'):
