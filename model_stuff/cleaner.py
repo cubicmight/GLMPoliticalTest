@@ -43,6 +43,6 @@ for filename in os.listdir(dataset_directory):
                 cleaned_data.append(line)
 
         # Write cleaned data to a new file
-        cleaned_file_path = os.path.join(cleaned_data_directory, f'cleaned2_{filename}')
+        cleaned_file_path = os.path.join(cleaned_data_directory, f'cleaned_new_{filename}')
         with open(cleaned_file_path, 'w') as file:
             file.writelines(cleaned_data)

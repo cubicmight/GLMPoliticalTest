@@ -1,7 +1,7 @@
-# Note: you need to be using OpenAI Python v0.27.0 for the code below to work
 import openai
 import os
 import random
+
 
 def polarity_gen():
     openai.api_key_path = 'model_stuff/API_KEY'
@@ -29,7 +29,7 @@ def polarity_gen():
     # Prompt gpt-3.5-turbo using openai api
     output = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
-        #you can also give it a role and a context and then use system role to give it a persona. with this context it will answer the question
+        # you can also give it a role and a context and then use system role to give it a persona. with this context it will answer the question
         messages=[
             {"role": "system",
              "content": "Given the statement" + random_phrase + " and the fact that a positive number means that the statement is a right-leaning Republican "
@@ -40,5 +40,4 @@ def polarity_gen():
         ]
     )
     # Print output of api call
-    return(output['choices'][0]['message']['content'])
-
+    return (output['choices'][0]['message']['content'])

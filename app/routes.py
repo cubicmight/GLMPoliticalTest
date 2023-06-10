@@ -12,6 +12,7 @@ import sys
 
 sys.path.append('../model_stuff')
 from model_stuff.prompt_feeder_chat_gpt import polarity_gen
+from model_stuff.gpt4all_feeder import polarity_gen_gpt4all
 
 
 @app.route('/favicon.ico')
@@ -78,4 +79,10 @@ def register():
 @app.route('/get_polarity', methods=['GET'])
 def get_polarity():
     polarity_value = polarity_gen()
+    return jsonify({'polarity': polarity_value})
+
+
+@app.route('/get_polarity_gpt4all', methods=['GET'])
+def get_polarity_gpt4all():
+    polarity_value = polarity_gen_gpt4all()
     return jsonify({'polarity': polarity_value})
