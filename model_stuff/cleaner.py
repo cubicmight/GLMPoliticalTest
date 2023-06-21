@@ -10,6 +10,7 @@ nltk.download('wordnet')
 english_words = set(nltk.corpus.words.words())
 
 # Function to check if a phrase is composed of English words with a frequency threshold
+
 def is_english(phrase, threshold=0):
     words = phrase.split()
     freq_dist = FreqDist(words)
@@ -24,7 +25,7 @@ if not os.path.exists(cleaned_data_directory):
     os.makedirs(cleaned_data_directory)
 
 # Specify the frequency threshold
-threshold = 0
+threshold = 15
 
 # Iterate over files in the dataset directory
 for filename in os.listdir(dataset_directory):
