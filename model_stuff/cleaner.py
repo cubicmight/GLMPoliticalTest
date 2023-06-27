@@ -6,7 +6,23 @@ from nltk.util import ngrams
 
 nltk.download('words')
 nltk.download('wordnet')
-
+# Ideological Bias in the Language Model: Investigate whether the language model exhibits any ideological bias in its
+# generated partisanship values. Analyze if there is a consistent overestimation or underestimation of partisanship
+# values for certain political affiliations.
+#
+# Robustness to Different Political Contexts: Examine the performance of the language model in assigning partisanship
+# values across different political contexts. Analyze whether the model's accuracy varies when applied to bigrams
+# from diverse political landscapes or historical periods.
+#
+# Research Question 1: Does the language model exhibit ideological bias in its generated partisanship values?
+# Specifically, are there consistent patterns of overestimation or underestimation of partisanship values for certain
+# political affiliations?
+#
+# Research Question 2: How does the language model perform in assigning partisanship values across different
+# political contexts? Does the accuracy of the model vary when applied to bigrams from diverse political landscapes
+# or historical periods?
+#
+# Research Question 3: Can the model be used to educate voters based on these questions
 # Load English word dictionary
 english_words = set(nltk.corpus.words.words())
 
