@@ -1,80 +1,57 @@
-import openai
 import os
-import random
+import nltk
+from nltk.corpus import wordnet
+from nltk.probability import FreqDist
+from nltk.util import ngrams
 
+nltk.download('words')
+nltk.download('wordnet')
 
-def polarity_gen():
-    openai.api_key_path = '../model_stuff/API_KEY'
+# Load English word dictionary
+english_words = set(nltk.corpus.words.words())
 
-    # Directory path for cleaned data
-    cleaned_data_directory = '../cleaned_data'
-
-    # List all files in the cleaned data directory
-    file_list = os.listdir(cleaned_data_directory)
-
-    # Pick a random file
-    random_file = random.choice(file_list)
-    print(random_file)
-    num_filter = []
-    for letter in random_file:
-        if letter.isdigit():
-            num_filter.append(letter)
-    congressional_num = ''.join(num_filter)
-    if congressional_num[0] == '0':
-        congressional_num = congressional_num[1:]
-        print(congressional_num)
-    else:
-        print(congressional_num)
-
-    # Read data from the random file
-    random_file_path = os.path.join(cleaned_data_directory, random_file)
-    with open(random_file_path, 'r') as file:
-        data = file.readlines()
-
-    # Pick a random phrase from the data
-    random_phrase = random.choice(data).strip().split('|')[0]
-
-    # Print the random phrase
-    print(f"Random phrase from '{random_file}': {random_phrase}")
-
-    # Prompt gpt-3.5-turbo using openai api
-    output = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        # you can also give it a role and a context and then use system role to give it a persona. with this context it will answer the question
-        messages=[
-            {"role": "system",
-             "content": "Given the below statement, the congress the phrase was said in,and the fact that a positive number means that the statement is a right-leaning Republican "
-                        "statement, a negative number means that the statement is a left-leaning "
-                        "Democratic statement, and 0 means that it is a neutral statement. The "
-                        "polarity value should be on a scale of -100 to 100."
-                        ""
-                        "Example:"
-                        "Phrase: red tape"
-                        # "Year: 2011"
-                        "Congress: 112"
-                        "Output: 30"
-
-                        "Example:"
-                        "Phrase: interest rate"
-                        # "Year: 2013"
-                        "Congress: 113"
-                        "Output: -104"
-
-                        "Example:"
-                        "Phrase: repeal afford"
-                        # "Year: 2013"
-                        "Congress: 113"
-                        "Output: -39"},
-
-            {"role": "user",
-             "content": "Phrase: " + random_phrase +
-                        "\nCongress: " + congressional_num}
-
-        ]
+# Function to check if a phrase is composed of English words with a frequency threshold
+def is_english(phrase, threshold=0):
+    words = phrase.split()
+    bigrams = list(ngrams(words, 2))  # Get bigrams from the words
+    freq_dist = FreqDist(words)
+    return all(
+        all(
+            word.lower() in english_words
+            and any(wordnet.synsets(word.lower()))
+            and freq_dist[word.lower()] >= threshold
+            for word in bigram
+        )
+        for bigram in bigrams
     )
-    print(output['choices'][0]['message']['content'])
-    # Print output of api call
-# return (output['choices'][0]['message']['content'])
 
+# Directory paths
+dataset_directory = '../dataset'
+cleaned_data_directory = '../cleaned_data'
 
-polarity_gen()
+# Create the cleaned_data directory if it doesn't exist
+if not os.path.exists(cleaned_data_directory):
+    os.makedirs(cleaned_data_directory)
+
+# Specify the frequency threshold
+threshold = 2  # Adjust the threshold as needed
+
+# Iterate over files in the dataset directory
+for filename in os.listdir(dataset_directory):
+    if filename.startswith('partisan_phrases'):
+        # Read data from file
+        file_path = os.path.join(dataset_directory, filename)
+        with open(file_path, 'r') as file:
+            data = file.readlines()
+
+        # Clean the data
+        cleaned_data = []
+        for line in data[1:]:  # Skip the column titles in the first line
+            phrase, _ = line.strip().split('|')
+            if is_english(phrase, threshold):
+                cleaned_data.append(line)
+
+        # Write cleaned data to a new file
+        cleaned_file_path = os.path.join(cleaned_data_directory, f'cleaned_new_{filename}')
+        with open(cleaned_file_path, 'w') as file:
+            file.writelines(cleaned_data)
