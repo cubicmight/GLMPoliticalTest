@@ -25,5 +25,5 @@ def count_duplicates(directory):
         print(f"Phrase: {phrase}\tCount: {count}")
 
 
-directory_path = 'cleaned_data'
+directory_path = '../cleaned_data'
 count_duplicates(directory_path)
