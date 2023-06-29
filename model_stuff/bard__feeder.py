@@ -1,8 +1,12 @@
-import openai
+from bardapi import Bard
 import os
 import random
 import re
 import chardet
+
+# Set the Bard API token
+token = 'YAjsv-lUSaU5xiVU-EW1a04T38o9r54Ud8TW0eYWvroMuRT3cCjcbeEoolH0PS17kvypMg.'
+bard = Bard(token=token)
 
 # Load speech data
 speeches_directory = '../speeches'
@@ -42,11 +46,7 @@ def get_congress_dates(file_name):
     return congress_number, start_date, end_date
 
 
-
-
 def polarity_gen():
-    openai.api_key_path = '../model_stuff/API_KEY'
-
     # Directory path for cleaned data
     cleaned_data_directory = '../cleaned_data'
 
@@ -93,84 +93,46 @@ def polarity_gen():
         print(sentence)
 
     print("\n\n\n\n")
-    # Initialize conversation list with system message
-    conversation = [
-        {
-            "role": "system",
-            "content": "Given the below statement, the congress the phrase was said in, and the fact that a positive number means that the statement is a right-leaning Republican "
-                       "statement, a negative number means that the statement is a left-leaning "
-                       "Democratic statement, and 0 means that it is a neutral statement. The "
-                       "polarity value should be on a scale of -100 to 100."
-                       "\n\nExample:"
-                       "\nPhrase: red tape"
-                       "\nStart Date: January 4, 1977"
-                       "\nEnd Date: January 3, 1979"
-                       "\nCongress: 95"
-                       "\nOutput: 30"
-                       "\n\nExample:"
-                       "\nPhrase: interest rate"
-                       "\nStart Date: January 3, 2013"
-                       "\nEnd Date: January 3, 2015"
-                       "\nCongress: 113"
-                       "\nOutput: -100"
-                       "\n\nExample:"
-                       "\nPhrase: repeal afford"
-                       "\nStart Date: January 3, 2013"
-                       "\nEnd Date: January 3, 2015"
-                       "\nCongress: 113"
-                       "\nOutput: -39"
-        },
-        {
-            "role": "user",
-            "content": f"Phrase: {random_phrase}"
-                       f"\nStart Date: {start_date}"
-                       f"\nEnd Date: {end_date}"
-                       f"\nCongress: {congress_num}"
-        },
-        {
-            "role": "system",
-            "content": "Here are some sentences containing the word:"
-        }
-    ]
 
-    # Add sentences to the conversation
-    character_count = sum(len(sentence) for sentence in conversation[2]['content'])  # Initial character count
-    cutoff_index = None
-    for i, sentence in enumerate(random_sentences):
-        if character_count + len(sentence) > 4000:
-            cutoff_index = i
-            break
-        conversation.append({
-            "role": "system",
-            "content": sentence
-        })
-        character_count += len(sentence)
+    # Define the prompt
+    prompt = f"Given the below statement, the congress the phrase was said in, and the fact that a positive number means that the statement is a right-leaning Republican " \
+             f"statement, a negative number means that the statement is a left-leaning " \
+             f"Democratic statement, and 0 means that it is a neutral statement. The " \
+             f"polarity value should be on a scale of -100 to 100." \
+             f"\n\nExample:" \
+             f"\nPhrase: red tape" \
+             f"\nStart Date: January 4, 1977" \
+             f"\nEnd Date: January 3, 1979" \
+             f"\nCongress: 95" \
+             f"\nOutput: 30" \
+             f"\n\nExample:" \
+             f"\nPhrase: interest rate" \
+             f"\nStart Date: January 3, 2013" \
+             f"\nEnd Date: January 3, 2015" \
+             f"\nCongress: 113" \
+             f"\nOutput: -100" \
+             f"\n\nExample:" \
+             f"\nPhrase: repeal afford" \
+             f"\nStart Date: January 3, 2013" \
+             f"\nEnd Date: January 3, 2015" \
+             f"\nCongress: 113" \
+             f"\nOutput: -39" \
+             f"\n\nPhrase: {random_phrase}" \
+             f"\nStart Date: {start_date}" \
+             f"\nEnd Date: {end_date}" \
+             f"\nCongress: {congress_num}"
 
-    # If cutoff_index is set, remove remaining sentences
-    if cutoff_index is not None:
-        random_sentences = random_sentences[:cutoff_index]
+    # Send an API request to Bard and get the response
+    response = bard.get_answer(prompt)
 
-    # Add selected sentences as user messages to the conversation
-    for sentence in random_sentences:
-        conversation.append({
-            "role": "user",
-            "content": sentence
-        })
-
-    # Prompt gpt-3.5-turbo using openai api
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=conversation
-    )
-
-    # Get model's reply
-    reply = response['choices'][0]['message']['content']
+    # Get the model's reply
+    reply = response['content']
 
     # Print the model's reply
     print(reply)
 
     # Print output of API call
-    print(response['choices'][0]['message']['content'])
+    print(response)
 
 
 # Run the polarity_gen function
