@@ -129,7 +129,7 @@ def polarity_gen():
         },
         {
             "role": "system",
-            "content": "Here are some sentences containing the word:"
+            "content": "Here are some sentences containing the word, only reply with the polarity value:"
         }
     ]
 
