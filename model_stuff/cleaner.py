@@ -4,8 +4,6 @@ from nltk.corpus import wordnet
 from nltk.probability import FreqDist
 from nltk.util import ngrams
 
-nltk.download('words')
-nltk.download('wordnet')
 # Ideological Bias in the Language Model: Investigate whether the language model exhibits any ideological bias in its
 # generated partisanship values. Analyze if there is a consistent overestimation or underestimation of partisanship
 # values for certain political affiliations.
@@ -23,6 +21,11 @@ nltk.download('wordnet')
 # or historical periods?
 #
 # Research Question 3: Can the model be used to educate voters based on these questions
+# Load English word dictionary
+
+nltk.download('words')
+nltk.download('wordnet')
+
 # Load English word dictionary
 english_words = set(nltk.corpus.words.words())
 
@@ -42,8 +45,8 @@ def is_english(phrase, threshold=0):
     )
 
 # Directory paths
-dataset_directory = '../dataset'
-cleaned_data_directory = '../cleaned_data'
+dataset_directory = 'dataset'
+cleaned_data_directory = 'cleaned_data'
 
 # Create the cleaned_data directory if it doesn't exist
 if not os.path.exists(cleaned_data_directory):
@@ -71,4 +74,3 @@ for filename in os.listdir(dataset_directory):
         cleaned_file_path = os.path.join(cleaned_data_directory, f'cleaned_new_{filename}')
         with open(cleaned_file_path, 'w') as file:
             file.writelines(cleaned_data)
-
