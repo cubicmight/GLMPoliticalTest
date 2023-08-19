@@ -160,7 +160,7 @@ def polarity_gen():
     # Run the model three times for each phrase
     for _ in range(3):
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=conversation
         )
 
