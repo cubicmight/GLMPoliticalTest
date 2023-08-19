@@ -25,7 +25,7 @@ sorted_data = sorted(phrase_and_phrase_num, key=lambda x: abs(x[1]), reverse=Tru
 top_300_phrases = sorted_data[:300]
 
 # Write the selected phrases to a new file
-output_file = "top_phrases.txt"
+output_file = "../cleaned_data/top_phrases.txt"
 with open(output_file, "w") as f:
     for phrase, value in top_300_phrases:
         f.write(f"{phrase}|{value}\n")

@@ -27,46 +27,34 @@ def polarity_gen_gpt4all():
     random_phrase = random.choice(data).strip().split('|')[0]
     print(f"Random phrase from '{random_file}': {random_phrase}")
 
-    load_speech_data(congress_num, speeches_directory, speech_data)
-    speech_data_congress = speech_data.get(congress_num)
-
-    keyword_pattern = rf"\b{re.escape(random_phrase)}\b"
-    sentences_with_word = [line.strip() for line in speech_data_congress if re.search(keyword_pattern, line)]
-
-    random_sentences = random.sample(sentences_with_word, min(3, len(sentences_with_word)))
-
-    # Truncate sentences longer than 1925 characters
-    for i in range(len(random_sentences)):
-        if len(random_sentences[i]) > 1925:
-            random_sentences[i] = random_sentences[i][:1925]
-
-    conversation = [
-        {
-            "role": "system",
-            "content": "Given the below statement, the congress the phrase was said in, and the fact that a positive "
-                       "number means that the statement is a right-leaning Republican "
-                       "statement, a negative number means that the statement is a left-leaning "
-                       "Democratic statement, and 0 means that it is a neutral statement. The "
-                       "polarity value should be on a scale of -100 to 100, where the polarity value can be any "
-                       "number within that range. It does not have to be just -100 or 100."
-                       "\nExample Output: 30"
-                       "\nExample Output: -58"
-                       "\nExample Output: -39"
-        },
-        {
-            "role": "user",
-            "content": f"Phrase: {random_phrase}\n"
-                       f"Start Date: {start_date}\n"
-                       f"End Date: {end_date}\n"
-                       f"Congress: {congress_num}\n"
-                       f"Random Sentences:\n{'                               1'.join(textwrap.wrap(' '.join(random_sentences), width=1925))}\n"
-                       "Provide a polarity value."
-        }
-    ]
-
-    response = gptj.chat_completion(conversation)
-    polarity = response['choices'][-1]['message']['content']
-    print(polarity)
+    response = gptj.generate(f"Given the below statement, the congress the phrase was said in, and the fact that a positive number "
+             f"means that the statement is a right-leaning Republican " 
+             f"statement, a negative number means that the statement is a left-leaning " 
+             f"Democratic statement, and 0 means that it is a neutral statement. The " 
+             f"polarity value should be on a scale of -100 to 100. Answer with only a polarity value." 
+             f"\n\nExample:" 
+             f"\nPhrase: red tape" 
+             f"\nStart Date: January 4, 1977" 
+             f"\nEnd Date: January 3, 1979" 
+             f"\nCongress: 95" 
+             f"\nOutput: 30" 
+             f"\n\nExample:" 
+             f"\nPhrase: interest rate" 
+             f"\nStart Date: January 3, 2013"
+             f"\nEnd Date: January 3, 2015"
+             f"\nCongress: 113"
+             f"\nOutput: -100"
+             f"\n\nExample:"
+             f"\nPhrase: repeal afford"
+             f"\nStart Date: January 3, 2013" 
+             f"\nEnd Date: January 3, 2015" 
+             f"\nCongress: 113"
+             f"\nOutput: -39"
+             f"\n\nPhrase: {random_phrase}" 
+             f"\nStart Date: {start_date}"
+             f"\nEnd Date: {end_date}" 
+             f"\nCongress: {congress_num}")
+    print(response)
 
 
 def get_congress_dates(file_name):
@@ -77,15 +65,15 @@ def get_congress_dates(file_name):
     return congress_number, start_date, end_date
 
 
-def load_speech_data(congress_num, speeches_directory, speech_data):
-    if congress_num in speech_data:
-        return
-
-    speech_data[congress_num] = []
-
-    speech_file = os.path.join(speeches_directory, f"speeches_{congress_num}.txt")
-    with open(speech_file, 'r', encoding='ISO-8859-1') as file:
-        speech_data[congress_num] = file.readlines()
+# def load_speech_data(congress_num, speeches_directory, speech_data):
+#     if congress_num in speech_data:
+#         return
+#
+#     speech_data[congress_num] = []
+#
+#     speech_file = os.path.join(speeches_directory, f"speeches_{congress_num}.txt")
+#     with open(speech_file, 'r', encoding='ISO-8859-1') as file:
+#         speech_data[congress_num] = file.readlines()
 
 
 polarity_gen_gpt4all()

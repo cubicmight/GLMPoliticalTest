@@ -3,9 +3,9 @@ import os
 import random
 import re
 import chardet
-#commiting comment12121231231231231233123123123123313123123123123123
+
 # Set the Bard API token
-token = 'YAjsv-lUSaU5xiVU-EW1a04T38o9r54Ud8TW0eYWvroMuRT3cCjcbeEoolH0PS17kvypMg.'
+token = 'aAjsv4s_cZzKx4pycdtkxOfjo_IIOopxKxQwwduF4XXvPcTFIntoppq0JQ1jEAtf4GhAgw.'
 bard = Bard(token=token)
 
 # Load speech data
@@ -75,30 +75,31 @@ def polarity_gen():
     print(f"Random phrase from '{random_file}': {random_phrase}")
 
     # Load speech data for the congress number
-    load_speech_data(congress_num)
+    # load_speech_data(congress_num)
 
     # Retrieve congress-specific speech data
-    speech_data_congress = speech_data.get(congress_num)
+    # speech_data_congress = speech_data.get(congress_num)
 
     # Filter sentences containing the word using regular expressions
-    keyword_pattern = rf"\b{re.escape(random_phrase)}\b"
-    sentences_with_word = [line.strip() for line in speech_data_congress if re.search(keyword_pattern, line)]
+    # keyword_pattern = rf"\b{re.escape(random_phrase)}\b"
+    # sentences_with_word = [line.strip() for line in speech_data_congress if re.search(keyword_pattern, line)]
 
     # Randomly select a few sentences with the word
-    random_sentences = random.sample(sentences_with_word, min(3, len(sentences_with_word)))
+    # random_sentences = random.sample(sentences_with_word, min(3, len(sentences_with_word)))
 
     # Print the randomly selected sentences
-    print("Sentences containing the word:")
-    for sentence in random_sentences:
-        print(sentence)
+    # print("Sentences containing the word:")
+    # for sentence in random_sentences:
+    #     print(sentence)
 
     print("\n\n\n\n")
 
     # Define the prompt
-    prompt = f"Given the below statement, the congress the phrase was said in, and the fact that a positive number means that the statement is a right-leaning Republican " \
-             f"statement, a negative number means that the statement is a left-leaning " \
+    prompt = f"Given the below phrase, the congress the phrase was said in, and the fact that a positive number " \
+             f"means that the phrase is a right-leaning Republican " \
+             f"phrase, a negative number means that the phrase is a left-leaning " \
              f"Democratic statement, and 0 means that it is a neutral statement. The " \
-             f"polarity value should be on a scale of -100 to 100." \
+             f"polarity value should be on a scale of -100 to 100. Answer with only a polarity value." \
              f"\n\nExample:" \
              f"\nPhrase: red tape" \
              f"\nStart Date: January 4, 1977" \
@@ -120,20 +121,44 @@ def polarity_gen():
              f"\n\nPhrase: {random_phrase}" \
              f"\nStart Date: {start_date}" \
              f"\nEnd Date: {end_date}" \
-             f"\nCongress: {congress_num}"
+             f"\nCongress: {congress_num}" \
+             f"\nKeep your entire response to a maximum of 15 characters. " \
+             f"Answer with just the polarity value number and nothing else " \
+             f"No explanation needed."\
 
-    # Send an API request to Bard and get the response
-    response = bard.get_answer(prompt)
 
-    # Get the model's reply
-    reply = response['content']
+    phrase_results = {}
 
-    # Print the model's reply
-    print(reply)
+    # Run the model three times for each phrase
+    for _ in range(3):
+        response = bard.get_answer(prompt)  # Change 'bard' to your appropriate API object
 
-    # Print output of API call
-    print(response)
+        # Get the model's reply
+        reply = response['content']
 
+        congress_pattern = re.escape(congress_num)
+        num_pattern = r'[-+]?\d*\.\d+|\d+'
+        combined_pattern = fr'{congress_pattern}.*({num_pattern})$'
+
+        polarity_value_match = re.search(combined_pattern, reply)
+        if polarity_value_match and polarity_value_match.group(1):
+            polarity_value = float(polarity_value_match.group(1))
+        else:
+            polarity_value = 0.0
+
+        phrase_results.setdefault(random_phrase, []).append(polarity_value)
+
+        # Print the model's reply
+        print(reply)
+
+    # Print the stored phrase results
+    print("Phrase Results:")
+    for phrase, values in phrase_results.items():
+        print(f"{phrase}: {values}")
+
+
+# Initialize conversation list with system message
+results = []  # To store the results
 
 # Run the polarity_gen function
 polarity_gen()

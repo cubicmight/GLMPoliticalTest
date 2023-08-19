@@ -75,31 +75,31 @@ def polarity_gen():
     print(f"Random phrase from '{random_file}': {random_phrase}")
 
     # Load speech data for the congress number
-    load_speech_data(congress_num)
-
-    # Retrieve congress-specific speech data
-    speech_data_congress = speech_data.get(congress_num)
-
-    # Filter sentences containing the word using regular expressions
-    keyword_pattern = rf"\b{re.escape(random_phrase)}\b"
-    sentences_with_word = [line.strip() for line in speech_data_congress if re.search(keyword_pattern, line)]
-
-    # Randomly select a few sentences with the word
-    random_sentences = random.sample(sentences_with_word, min(3, len(sentences_with_word)))
-
-    # Print the randomly selected sentences
-    print("Sentences containing the word:")
-    for sentence in random_sentences:
-        print(sentence)
+    # load_speech_data(congress_num)
+    #
+    # # Retrieve congress-specific speech data
+    # speech_data_congress = speech_data.get(congress_num)
+    #
+    # # Filter sentences containing the word using regular expressions
+    # keyword_pattern = rf"\b{re.escape(random_phrase)}\b"
+    # sentences_with_word = [line.strip() for line in speech_data_congress if re.search(keyword_pattern, line)]
+    #
+    # # Randomly select a few sentences with the word
+    # random_sentences = random.sample(sentences_with_word, min(3, len(sentences_with_word)))
+    #
+    # # Print the randomly selected sentences
+    # print("Sentences containing the word:")
+    # for sentence in random_sentences:
+    #     print(sentence)
 
     print("\n\n\n\n")
     # Initialize conversation list with system message
     conversation = [
         {
             "role": "system",
-            "content": "Given the below statement, the congress the phrase was said in, and the fact that a positive number means that the statement is a right-leaning Republican "
-                       "statement, a negative number means that the statement is a left-leaning "
-                       "Democratic statement, and 0 means that it is a neutral statement. The "
+            "content": "Given the below phrase, the congress the phrase was said in, and the fact that a positive number means that the phrase is a right-leaning Republican "
+                       "phrase, a negative number means that the phrase is a left-leaning "
+                       "Democratic phrase, and 0 means that it is a neutral phrase. The "
                        "polarity value should be on a scale of -100 to 100."
                        "\n\nExample:"
                        "\nPhrase: red tape"
@@ -127,50 +127,69 @@ def polarity_gen():
                        f"\nEnd Date: {end_date}"
                        f"\nCongress: {congress_num}"
         },
-        {
-            "role": "system",
-            "content": "Here are some sentences containing the word, only reply with the polarity value:"
-        }
     ]
 
     # Add sentences to the conversation
-    character_count = sum(len(sentence) for sentence in conversation[2]['content'])  # Initial character count
-    cutoff_index = None
-    for i, sentence in enumerate(random_sentences):
-        if character_count + len(sentence) > 4000:
-            cutoff_index = i
-            break
-        conversation.append({
-            "role": "system",
-            "content": sentence
-        })
-        character_count += len(sentence)
-
-    # If cutoff_index is set, remove remaining sentences
-    if cutoff_index is not None:
-        random_sentences = random_sentences[:cutoff_index]
-
-    # Add selected sentences as user messages to the conversation
-    for sentence in random_sentences:
-        conversation.append({
-            "role": "user",
-            "content": sentence
-        })
+    # character_count = sum(len(sentence) for sentence in conversation[2]['content'])  # Initial character count
+    # cutoff_index = None
+    # for i, sentence in enumerate(random_sentences):
+    #     if character_count + len(sentence) > 4000:
+    #         cutoff_index = i
+    #         break
+    #     conversation.append({
+    #         "role": "system",
+    #         "content": sentence
+    #     })
+    #     character_count += len(sentence)
+    #
+    # # If cutoff_index is set, remove remaining sentences
+    # if cutoff_index is not None:
+    #     random_sentences = random_sentences[:cutoff_index]
+    #
+    # # Add selected sentences as user messages to the conversation
+    # for sentence in random_sentences:
+    #     conversation.append({
+    #         "role": "user",
+    #         "content": sentence
+    #     })
 
     # Prompt gpt-3.5-turbo using openai api
-    response = openai.ChatCompletion.create(
-        model="gpt-3.5-turbo",
-        messages=conversation
-    )
+    # Create a dictionary to store phrase and corresponding results
+    phrase_results = {}
 
-    # Get model's reply
-    reply = response['choices'][0]['message']['content']
+    # Run the model three times for each phrase
+    for _ in range(3):
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=conversation
+        )
 
-    # Print the model's reply
-    print(reply)
+        # Get model's reply
+        reply = response['choices'][0]['message']['content']
 
-    # Print output of API call
-    print(response['choices'][0]['message']['content'])
+        # Extract numerical value from the response using regular expression
+        polarity_value = re.search(r'(-?\d+)', reply)
+        if polarity_value:
+            polarity_value = int(polarity_value.group(0))
+        else:
+            polarity_value = 0  # Default value if no number is found
+
+        # Store the result in the phrase_results dictionary
+        phrase_results.setdefault(random_phrase, []).append(polarity_value)
+
+        # Print the model's reply and output of API call
+        print(response['choices'][0]['message']['content'])
+
+    # Print the stored phrase results
+    print("Phrase Results:")
+    for phrase, values in phrase_results.items():
+        print(f"{phrase}: {values}")
+
+
+# Initialize conversation list with system message
+results = []  # To store the results
+
+
 
 
 # Run the polarity_gen function

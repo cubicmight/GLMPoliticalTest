@@ -24,6 +24,8 @@ def count_duplicates(directory):
     for phrase, count in duplicates.items():
         print(f"Phrase: {phrase}\tCount: {count}")
 
+#hand pick, run through multiple times and average data
+
 
 directory_path = '../cleaned_data'
 count_duplicates(directory_path)
