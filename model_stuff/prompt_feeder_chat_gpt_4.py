@@ -1,196 +1,97 @@
 import openai
-import os
-import random
 import re
-import chardet
-
-# Load speech data
-speeches_directory = '../speeches'
-speech_data = {}
-
-
-def load_speech_data(congress_number):
-    global speech_data
-    if congress_number in speech_data:
-        # Speech data for the congress number is already loaded
-        return
-
-    print(f"Loading speech data for Congress {congress_number}...")
-    file_name = f"speeches_{congress_number.zfill(3)}.txt"  # Update the file name format
-    speech_file_path = os.path.join(speeches_directory, file_name)
-    speech_file_encoding = get_file_encoding(speech_file_path)
-    with open(speech_file_path, 'r', encoding=speech_file_encoding, errors='ignore') as file:
-        speech_data[congress_number] = file.readlines()
-    print(f"Speech data for Congress {congress_number} loaded successfully.")
-
-
-def get_file_encoding(file_path):
-    with open(file_path, 'rb') as f:
-        result = chardet.detect(f.read())
-        encoding = result.get('encoding')
-        if encoding is None:
-            # Fallback to a default encoding (e.g., UTF-8) if detection fails
-            encoding = 'utf-8'
-        return encoding
-
-
-def get_congress_dates(file_name):
-    congress_number = re.findall(r'\d+', file_name)[0]
-    date_matches = re.findall(r'\d{1,2}_\w{3}_\d{2}', file_name)
-    start_date = date_matches[0].replace('_', ' ')
-    end_date = date_matches[1].replace('_', ' ') if len(date_matches) > 1 else "Unknown"
-    return congress_number, start_date, end_date
-
-
+from assign_info_for_handpicked import get_random_phrase_and_info, get_line_info
 
 
 def polarity_gen():
     openai.api_key_path = '../model_stuff/API_KEY'
+    phrase_results = {}  # Initialize outside the loop
+    with open('../cleaned_data/top_handpicked_phrases.txt', 'r') as handpicked:
+        handpicked_read = [line.strip() for line in handpicked.readlines()]
+        for line in handpicked_read:
+            input_line, random_file, congress_num, start_date, end_date = get_line_info(line)
+            phrase = input_line.strip().split('|')[0]
+            print("---------THE MODEL IS BEING PROMPTED WITH---------")
+            print(f"Phrase: {phrase}")
+            print(f"Congress Number: {congress_num}")
+            print(f"Start Date: {start_date}")
+            print(f"End Date: {end_date}\n")
+            print("---------------------------------------------------")
+            print("\n\n")
+            # Initialize conversation list with system message
+            conversation = [
+                {
+                    "role": "system",
+                    "content": "Given the below phrase, the congress the phrase was said in, and the fact that a positive "
+                               "number means that the phrase is a right-leaning Republican "
+                               "phrase, a negative number means that the phrase is a left-leaning "
+                               "Democratic phrase, and 0 means that it is a neutral phrase. The "
+                               "polarity value should be on a scale of -100 to 100."
+                               "\n\nExample:"
+                               "\nPhrase: red tape"
+                               "\nStart Date: January 4, 1977"
+                               "\nEnd Date: January 3, 1979"
+                               "\nCongress: 95"
+                               "\nOutput: 30"
+                               "\n\nExample:"
+                               "\nPhrase: interest rate"
+                               "\nStart Date: January 3, 2013"
+                               "\nEnd Date: January 3, 2015"
+                               "\nCongress: 113"
+                               "\nOutput: -100"
+                               "\n\nExample:"
+                               "\nPhrase: repeal afford"
+                               "\nStart Date: January 3, 2013"
+                               "\nEnd Date: January 3, 2015"
+                               "\nCongress: 113"
+                               "\nOutput: -39"
+                },
+                {
+                    "role": "user",
+                    "content": f"Phrase: {phrase}"
+                               f"\nStart Date: {start_date}"
+                               f"\nEnd Date: {end_date}"
+                               f"\nCongress: {congress_num}"
+                },
+            ]
 
-    # Directory path for cleaned data
-    cleaned_data_directory = '../cleaned_data'
+            phrase_results.setdefault(phrase, [])
+            # Run the model three times for each phrase
+            for _ in range(3):
+                response = openai.ChatCompletion.create(
+                    model="gpt-4",
+                    messages=conversation
+                )
 
-    # List all files in the cleaned data directory
-    cleaned_data_file_list = os.listdir(cleaned_data_directory)
+                # Get model's reply
+                reply = response['choices'][0]['message']['content']
 
-    # Pick a random file from the cleaned data directory
-    random_file = random.choice(cleaned_data_file_list)
-    print(random_file)
+                # Extract numerical value from the response using regular expression
+                polarity_value = re.search(r'(-?\d+)', reply)
+                if polarity_value:
+                    polarity_value = int(polarity_value.group(0))
+                else:
+                    polarity_value = 0  # Default value if no number is found
 
-    # Get congress number and dates from file name
-    congress_num, start_date, end_date = get_congress_dates(random_file)
-    print(congress_num)
-    print(start_date)
-    print(end_date)
+                # Store the result in the phrase_results dictionary
+                phrase_results[phrase].append(polarity_value)
 
-    # Read data from the random file in the cleaned data directory
-    random_file_path = os.path.join(cleaned_data_directory, random_file)
-    with open(random_file_path, 'r') as file:
-        data = file.readlines()
+                # Print the model's reply and output of API call
+                print('----------------MODEL RESPONSE----------------')
+                print(response['choices'][0]['message']['content'])
+                print("----------------------------------------------")
 
-    # Pick a random phrase from the data
-    random_phrase = random.choice(data).strip().split('|')[0]
-
-    # Print the random phrase
-    print(f"Random phrase from '{random_file}': {random_phrase}")
-
-    # Load speech data for the congress number
-    # load_speech_data(congress_num)
-    #
-    # # Retrieve congress-specific speech data
-    # speech_data_congress = speech_data.get(congress_num)
-    #
-    # # Filter sentences containing the word using regular expressions
-    # keyword_pattern = rf"\b{re.escape(random_phrase)}\b"
-    # sentences_with_word = [line.strip() for line in speech_data_congress if re.search(keyword_pattern, line)]
-    #
-    # # Randomly select a few sentences with the word
-    # random_sentences = random.sample(sentences_with_word, min(3, len(sentences_with_word)))
-    #
-    # # Print the randomly selected sentences
-    # print("Sentences containing the word:")
-    # for sentence in random_sentences:
-    #     print(sentence)
-
-    print("\n\n\n\n")
-    # Initialize conversation list with system message
-    conversation = [
-        {
-            "role": "system",
-            "content": "Given the below phrase, the congress the phrase was said in, and the fact that a positive number means that the phrase is a right-leaning Republican "
-                       "phrase, a negative number means that the phrase is a left-leaning "
-                       "Democratic phrase, and 0 means that it is a neutral phrase. The "
-                       "polarity value should be on a scale of -100 to 100."
-                       "\n\nExample:"
-                       "\nPhrase: red tape"
-                       "\nStart Date: January 4, 1977"
-                       "\nEnd Date: January 3, 1979"
-                       "\nCongress: 95"
-                       "\nOutput: 30"
-                       "\n\nExample:"
-                       "\nPhrase: interest rate"
-                       "\nStart Date: January 3, 2013"
-                       "\nEnd Date: January 3, 2015"
-                       "\nCongress: 113"
-                       "\nOutput: -100"
-                       "\n\nExample:"
-                       "\nPhrase: repeal afford"
-                       "\nStart Date: January 3, 2013"
-                       "\nEnd Date: January 3, 2015"
-                       "\nCongress: 113"
-                       "\nOutput: -39"
-        },
-        {
-            "role": "user",
-            "content": f"Phrase: {random_phrase}"
-                       f"\nStart Date: {start_date}"
-                       f"\nEnd Date: {end_date}"
-                       f"\nCongress: {congress_num}"
-        },
-    ]
-
-    # Add sentences to the conversation
-    # character_count = sum(len(sentence) for sentence in conversation[2]['content'])  # Initial character count
-    # cutoff_index = None
-    # for i, sentence in enumerate(random_sentences):
-    #     if character_count + len(sentence) > 4000:
-    #         cutoff_index = i
-    #         break
-    #     conversation.append({
-    #         "role": "system",
-    #         "content": sentence
-    #     })
-    #     character_count += len(sentence)
-    #
-    # # If cutoff_index is set, remove remaining sentences
-    # if cutoff_index is not None:
-    #     random_sentences = random_sentences[:cutoff_index]
-    #
-    # # Add selected sentences as user messages to the conversation
-    # for sentence in random_sentences:
-    #     conversation.append({
-    #         "role": "user",
-    #         "content": sentence
-    #     })
-
-    # Prompt gpt-3.5-turbo using openai api
-    # Create a dictionary to store phrase and corresponding results
-    phrase_results = {}
-
-    # Run the model three times for each phrase
-    for _ in range(3):
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=conversation
-        )
-
-        # Get model's reply
-        reply = response['choices'][0]['message']['content']
-
-        # Extract numerical value from the response using regular expression
-        polarity_value = re.search(r'(-?\d+)', reply)
-        if polarity_value:
-            polarity_value = int(polarity_value.group(0))
-        else:
-            polarity_value = 0  # Default value if no number is found
-
-        # Store the result in the phrase_results dictionary
-        phrase_results.setdefault(random_phrase, []).append(polarity_value)
-
-        # Print the model's reply and output of API call
-        print(response['choices'][0]['message']['content'])
-
-    # Print the stored phrase results
-    print("Phrase Results:")
-    for phrase, values in phrase_results.items():
-        print(f"{phrase}: {values}")
+                # Print the stored phrase results
+            print("Phrase Results:")
+            for phrase, values in phrase_results.items():
+                print(f"{phrase}: {values}")
+    with open("../gpt-4-results-dir/gpt-4-results-5.txt", "w") as result_file:
+        for phrase, values in phrase_results.items():
+            result_file.write(f"{phrase}: {values}\n")
 
 
 # Initialize conversation list with system message
 results = []  # To store the results
-
-
-
 
 # Run the polarity_gen function
 polarity_gen()
