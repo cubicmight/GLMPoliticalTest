@@ -27,7 +27,7 @@ def polarity_gen():
                                "number means that the phrase is a right-leaning Republican "
                                "phrase, a negative number means that the phrase is a left-leaning "
                                "Democratic phrase, and 0 means that it is a neutral phrase. The "
-                               "polarity value should be on a scale of -100 to 100."
+                               "polarity value should be on a scale of -110 to 110."
                                "\n\nExample:"
                                "\nPhrase: red tape"
                                "\nStart Date: January 4, 1977"
@@ -87,7 +87,7 @@ def polarity_gen():
             for phrase, values in phrase_results.items():
                 print(f"{phrase}: {values}")
             time.sleep(5)
-    with open("../bard-results-dir/bard-results-5.txt", "w") as result_file:
+    with open("../gpt-3.5-results-dir/gpt-3.5-turbo-results-1-average.txt", "w") as result_file:
         for phrase, values in phrase_results.items():
             result_file.write(f"{phrase}: {values}\n")
 
