@@ -38,4 +38,4 @@ flat tax: [70, 80, 80]
 equal right: [80, -18, 92]
 birth control: [-75, -80, -76]
 amount debt: [67, 70, -55]
-: [0, 0, 0, 0, 0, 0]
+
