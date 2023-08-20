@@ -25,8 +25,8 @@ def polarity_gen():
             prompt = f"Given the below phrase, the congress the phrase was said in, and the start and end date of that congress, and the fact that a positive number " \
                      f"means that the phrase is a right-leaning Republican " \
                      f"phrase, a negative number means that the phrase is a left-leaning " \
-                     f"Democratic statement, and 0 means that it is a neutral statement. The " \
-                     f"polarity value should be on a scale of -110 to 110. Answer with only a polarity value." \
+                     f"Democratic statement, and 0 means that it is a neutral statement, output the polarity value for the given phrase. The " \
+                     f"polarity value should be on a scale of -110 to 110." \
                      f"\n\nExample:" \
                      f"\nPhrase: red tape" \
                      f"\nStart Date: January 4, 1977" \

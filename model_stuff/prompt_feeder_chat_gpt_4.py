@@ -26,7 +26,7 @@ def polarity_gen():
                     "content": "Given the below phrase, the congress the phrase was said in, and the start and end date of that congress, and the fact that a positive "
                                "number means that the phrase is a right-leaning Republican "
                                "phrase, a negative number means that the phrase is a left-leaning "
-                               "Democratic phrase, and 0 means that it is a neutral phrase. The "
+                               "Democratic phrase, and 0 means that it is a neutral phrase, output the polarity value for the given phrase. The "
                                "polarity value should be on a scale of -110 to 110."
                                "\n\nExample:"
                                "\nPhrase: red tape"
