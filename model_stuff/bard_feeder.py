@@ -26,7 +26,7 @@ def polarity_gen():
                      f"means that the phrase is a right-leaning Republican " \
                      f"phrase, a negative number means that the phrase is a left-leaning " \
                      f"Democratic statement, and 0 means that it is a neutral statement. The " \
-                     f"polarity value should be on a scale of -100 to 100. Answer with only a polarity value." \
+                     f"polarity value should be on a scale of -110 to 110. Answer with only a polarity value." \
                      f"\n\nExample:" \
                      f"\nPhrase: red tape" \
                      f"\nStart Date: January 4, 1977" \

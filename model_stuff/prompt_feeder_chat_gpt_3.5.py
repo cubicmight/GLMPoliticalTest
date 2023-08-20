@@ -1,7 +1,7 @@
 import time
 import openai
 import re
-from assign_info_for_handpicked import get_random_phrase_and_info, get_line_info
+from assign_info_for_handpicked import get_line_info
 
 
 def polarity_gen():
