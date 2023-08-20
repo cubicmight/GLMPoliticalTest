@@ -22,7 +22,7 @@ def polarity_gen():
             print("---------------------------------------------------")
 
             # Define the prompt
-            prompt = f"Given the below phrase, the congress the phrase was said in, and the fact that a positive number " \
+            prompt = f"Given the below phrase, the congress the phrase was said in, and the start and end date of that congress, and the fact that a positive number " \
                      f"means that the phrase is a right-leaning Republican " \
                      f"phrase, a negative number means that the phrase is a left-leaning " \
                      f"Democratic statement, and 0 means that it is a neutral statement. The " \
